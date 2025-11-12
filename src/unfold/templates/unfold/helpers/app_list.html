@@ -5,6 +5,7 @@
         {% for group in sidebar_navigation %}
             {% if group.items %}
                 {% has_nav_item_active group.items as has_active %}
+                {{ group.items }}
 
                 <div class="hidden mb-2 has-[ol]:has-[li]:block" {% if group.collapsible %}x-data="{navigationOpen: {% if has_active %}true{% else %}false{% endif %}}"{% endif %}>
                     {% if group.separator %}
@@ -26,10 +27,8 @@
                     <ol class="flex flex-col gap-1 px-6" {% if group.collapsible %}x-show="navigationOpen"{% endif %}>
                         {% for item in group.items %}
                             {% if item.has_permission %}
-                                {# Check if any subitem is active #}
-                                {% if item.items %}
-                                    {% has_nav_item_active item.items as has_subitem_active %}
-                                {% endif %}
+
+                                {{ item.items }}
                                 
                                 <li {% if item.items %}x-data="{'subnavigationOpen': {% if has_subitem_active %}true{% else %}false{% endif %} }"{% endif %}>
                                     <a {% if item.collapsible %}x-on:click.prevent="subnavigationOpen = !subnavigationOpen" href="#"{% else %}href="{% if item.link_callback %}{{ item.link_callback }}{% else %}{{ item.link }}{% endif %}"{% endif %} class="cursor-pointer flex h-[38px] items-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if item.active %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500{% endif %}">
