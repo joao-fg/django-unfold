@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: django_unfold_conf
+Version: 0.78.4
+Summary: This is a package forked from https://unfoldadmin.com/ that I made some adjustments, hereby I fully credit the original author.
+Dynamic: summary

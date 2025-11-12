@@ -41,11 +41,11 @@
                                         {% include "unfold/helpers/app_list_badge.html" with item=item %}
                                     </a>
                                     {% if item.items %}
-                                        <ol class="flex flex-col gap-1 px-6" {% if group.collapsible %}x-show="navigationOpen"{% endif %}>
+                                        <ol class="flex flex-col gap-1 pl-9 mt-1" x-show="subnavOpen" x-collapse>
                                             {% for subitem in item.items %}
                                                 {% if subitem.has_permission %}
                                                     <li>
-                                                        <a href="{% if subitem.link_callback %}{{ subitem.link_callback }}{% else %}{{ subitem.link }}{% endif %}" class="flex h-[38px] subitems-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if subitem.active %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500{% endif %}">
+                                                        <a href="{% if subitem.link_callback %}{{ subitem.link_callback }}{% else %}{{ subitem.link }}{% endif %}" class="flex h-[38px] items-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if subitem.active %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500{% endif %}">
                                                             {% if subitem.icon %}
                                                                 <span class="material-symbols-outlined md-18 mr-3 w-[18px]">
                                                                     {{ subitem.icon }}
@@ -119,7 +119,7 @@
     {% endif %}
 {% else %}
     <p>
-        {% trans "You don’t have permission to view or edit anything." as error_message %}
+        {% trans "You don't have permission to view or edit anything." as error_message %}
         {% include "unfold/helpers/messages/error.html" with error=error_message %}
     </p>
 {% endif %}
