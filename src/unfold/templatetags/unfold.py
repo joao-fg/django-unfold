@@ -181,6 +181,21 @@ def has_nav_item_active(items: list) -> bool:
     return False
 
 
+@register.simple_tag(name="has_active_subitem")
+def has_active_subitem(items):
+    """
+    Check if any item in the list has active=True
+    """
+    if not items:
+        return False
+    
+    for item in items:
+        if isinstance(item, dict) and item.get('active', False):
+            return True
+    
+    return False
+
+
 @register.filter
 def has_active_item(items: list[dict]) -> bool:
     for item in items:
