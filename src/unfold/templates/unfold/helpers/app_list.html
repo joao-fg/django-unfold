@@ -28,8 +28,11 @@
                     <ol class="flex flex-col gap-0.5 px-6" {% if group.collapsible %}x-show="navigationOpen"{% endif %}>
                         {% for item in group.items %}
                             {% if item.has_permission %}
-                                <li>
-                                    <a href="{% if item.link_callback %}{{ item.link_callback }}{% else %}{{ item.link }}{% endif %}" class="flex h-[38px] items-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if item.active %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500 active{% endif %}">
+                                {% if item.items %}
+                                    {% has_nav_item_active item.items as has_subitem_active %}
+                                {% endif %}
+                                <li {% if item.items %}x-data="{'subnavigationOpen': {% if has_subitem_active or item.open %}true{% else %}false{% endif %} }"{% endif %}>
+                                    <a {% if item.collapsible %}x-on:click.prevent="subnavigationOpen = !subnavigationOpen" href="#"{% else %}href="{% if item.link_callback %}{{ item.link_callback }}{% else %}{{ item.link }}{% endif %}"{% endif %} class="cursor-pointer flex h-[38px] items-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if item.active %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500{% endif %}">
                                         {% if item.icon %}
                                             <span class="material-symbols-outlined md-18 mr-3 w-[18px]">
                                                 {{ item.icon }}
@@ -38,7 +41,21 @@
 
                                         <span>{{ item.title|safe }}</span>
 
-                                        {% include "unfold/helpers/app_list_badge.html" with item=item %}
+                                        {% if item.badge %}
+                                            <span class="bg-red-600 font-semibold ml-2 px-1 relative rounded-xs text-xs text-white">
+                                                {% if item.badge_callback %}
+                                                    {{ item.badge_callback }}
+                                                {% else %}
+                                                    {{ item.badge }}
+                                                {% endif %}
+                                            </span>
+                                        {% endif %}
+
+                                        {% if item.items %}
+                                            <span class="material-symbols-outlined ml-auto select-none transition-all group-hover:text-primary-600 dark:group-hover:text-primary-500 rotate-90" x-bind:class="{'rotate-90': subnavigationOpen}">
+                                                chevron_right
+                                            </span>
+                                        {% endif %}
                                     </a>
                                     {% if item.items %}
                                         <ul class="border-l-2 border-base-200 flex flex-col gap-1 ml-2 my-2 dark:border-base-800" x-show="subnavigationOpen">
