@@ -26,7 +26,10 @@
                     <ol class="flex flex-col gap-1 px-6" {% if group.collapsible %}x-show="navigationOpen"{% endif %}>
                         {% for item in group.items %}
                             {% if item.has_permission %}
-                                <li {% if item.items %}x-data="{'subnavigationOpen': false }"{% endif %}>
+                                {% if item.items %}
+                                    {% has_nav_item_active item.items as has_subitem_active %}
+                                {% endif %}
+                                <li {% if item.items %}x-data="{'subnavigationOpen': {% if has_subitem_active or item.open %}true{% else %}false{% endif %} }"{% endif %}>
                                     <a {% if item.collapsible %}x-on:click.prevent="subnavigationOpen = !subnavigationOpen" href="#"{% else %}href="{% if item.link_callback %}{{ item.link_callback }}{% else %}{{ item.link }}{% endif %}"{% endif %} class="cursor-pointer flex h-[38px] items-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if item.active %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500{% endif %}">
                                         {% if item.icon %}
                                             <span class="material-symbols-outlined md-18 mr-3 w-[18px]">
@@ -48,7 +51,7 @@
                                             </span>
                                         {% endif %}
 
-                                        {% if item.collapsible %}
+                                        {% if item.items %}
                                             <span class="material-symbols-outlined ml-auto select-none transition-all group-hover:text-primary-600 dark:group-hover:text-primary-500 rotate-90" x-bind:class="{'rotate-90': subnavigationOpen}">
                                                 chevron_right
                                             </span>
