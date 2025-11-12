@@ -126,11 +126,11 @@ def has_active_subitem(items):
     """
     if not items:
         return False
-    
+
     for item in items:
-        if isinstance(item, dict) and item.get('active', False):
+        if isinstance(item, dict) and item.get("active", False):
             return True
-    
+
     return False
 
 
