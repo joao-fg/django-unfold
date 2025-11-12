@@ -26,69 +26,47 @@
                     <ol class="flex flex-col gap-1 px-6" {% if group.collapsible %}x-show="navigationOpen"{% endif %}>
                         {% for item in group.items %}
                             {% if item.has_permission %}
-                                <li x-data="{subnavOpen: false}">
-                                    <div class="flex items-center">
-                                        <a href="{% if item.link_callback %}{{ item.link_callback }}{% else %}{{ item.link }}{% endif %}" class="flex h-[38px] items-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if item.active %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500{% endif %} flex-grow">
-                                            {% if item.icon %}
-                                                <span class="material-symbols-outlined md-18 mr-3 w-[18px]">
-                                                    {{ item.icon }}
-                                                </span>
-                                            {% endif %}
-
-                                            <span class="text-sm">
-                                                {{ item.title|safe }}
+                                <li {% if item.items %}x-data="{'subnavigationOpen': false }"{% endif %}>
+                                    <a {% if item.items %}x-on:click="subnavigationOpen = !subnavigationOpen"{% endif %} href="{% if not item.items %}{% if item.link_callback %}{{ item.link_callback }}{% else %}{{ item.link }}{% endif %}{% endif %}" class="cursor-pointer flex h-[38px] items-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if item.active %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500{% endif %}">
+                                        {% if item.icon %}
+                                            <span class="material-symbols-outlined md-18 mr-3 w-[18px]">
+                                                {{ item.icon }}
                                             </span>
-
-                                            {% if item.badge %}
-                                                <span class="bg-red-600 font-semibold ml-2 px-1 relative rounded-xs text-xs text-white">
-                                                    {% if item.badge_callback %}
-                                                        {{ item.badge_callback }}
-                                                    {% else %}
-                                                        {{ item.badge }}
-                                                    {% endif %}
-                                                </span>
-                                            {% endif %}
-                                        </a>
-                                        
-                                        {% if item.items %}
-                                            <button type="button" class="h-[38px] w-[38px] flex items-center justify-center -mr-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500" x-on:click="subnavOpen = !subnavOpen">
-                                                <span class="material-symbols-outlined md-18 transition-transform" x-bind:class="{'rotate-180': subnavOpen}">
-                                                    expand_more
-                                                </span>
-                                            </button>
                                         {% endif %}
-                                    </div>
-                                    
+
+                                        <span class="text-sm">
+                                            {{ item.title|safe }}
+                                        </span>
+
+                                        {% if item.badge %}
+                                            <span class="bg-red-600 font-semibold ml-2 px-1 relative rounded-xs text-xs text-white">
+                                                {% if item.badge_callback %}
+                                                    {{ item.badge_callback }}
+                                                {% else %}
+                                                    {{ item.badge }}
+                                                {% endif %}
+                                            </span>
+                                        {% endif %}
+
+                                        {% if item.items %}
+                                            <span class="material-symbols-outlined ml-auto select-none transition-all group-hover:text-primary-600 dark:group-hover:text-primary-500 rotate-90" x-bind:class="{'rotate-90': subnavigationOpen}">
+                                                chevron_right
+                                            </span>
+                                        {% endif %}
+                                    </a>
+
                                     {% if item.items %}
-                                        <ol class="flex flex-col gap-1 pl-9 mt-1" x-show="subnavOpen" x-collapse>
+                                        <ul class="border-l-2 border-base-200 flex flex-col gap-1 ml-2 my-2 dark:border-base-800" x-show="subnavigationOpen">
                                             {% for subitem in item.items %}
                                                 {% if subitem.has_permission %}
-                                                    <li>
-                                                        <a href="{% if subitem.link_callback %}{{ subitem.link_callback }}{% else %}{{ subitem.link }}{% endif %}" class="flex h-[38px] items-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if subitem.active %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500{% endif %}">
-                                                            {% if subitem.icon %}
-                                                                <span class="material-symbols-outlined md-18 mr-3 w-[18px]">
-                                                                    {{ subitem.icon }}
-                                                                </span>
-                                                            {% endif %}
-
-                                                            <span class="text-sm">
-                                                                {{ subitem.title|safe }}
-                                                            </span>
-
-                                                            {% if subitem.badge %}
-                                                                <span class="bg-red-600 font-semibold ml-2 px-1 relative rounded-xs text-xs text-white">
-                                                                    {% if subitem.badge_callback %}
-                                                                        {{ subitem.badge_callback }}
-                                                                    {% else %}
-                                                                        {{ subitem.badge }}
-                                                                    {% endif %}
-                                                                </span>
-                                                            {% endif %}
+                                                    <li class="ml-5">
+                                                        <a href="{% if subitem.link_callback %}{{ subitem.link_callback }}{% else %}{{ subitem.link }}{% endif %}" class="block rounded-default -mx-3 px-3 py-1.5 hover:text-primary-600 dark:hover:text-primary-500 {% if subitem.active %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500{% endif %}">
+                                                            {{ subitem.title|safe }}
                                                         </a>
                                                     </li>
                                                 {% endif %}
                                             {% endfor %}
-                                        </ol>
+                                        </ul>
                                     {% endif %}
                                 </li>
                             {% endif %}
