@@ -26,34 +26,45 @@
                     <ol class="flex flex-col gap-1 px-6" {% if group.collapsible %}x-show="navigationOpen"{% endif %}>
                         {% for item in group.items %}
                             {% if item.has_permission %}
-                                <li>
-                                    <a href="{% if item.link_callback %}{{ item.link_callback }}{% else %}{{ item.link }}{% endif %}" class="flex h-[38px] items-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if item.active %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500{% endif %}">
-                                        {% if item.icon %}
-                                            <span class="material-symbols-outlined md-18 mr-3 w-[18px]">
-                                                {{ item.icon }}
-                                            </span>
-                                        {% endif %}
+                                <li x-data="{subnavOpen: false}">
+                                    <div class="flex items-center">
+                                        <a href="{% if item.link_callback %}{{ item.link_callback }}{% else %}{{ item.link }}{% endif %}" class="flex h-[38px] items-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if item.active %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500{% endif %} flex-grow">
+                                            {% if item.icon %}
+                                                <span class="material-symbols-outlined md-18 mr-3 w-[18px]">
+                                                    {{ item.icon }}
+                                                </span>
+                                            {% endif %}
 
-                                        <span class="text-sm">
-                                            {{ item.title|safe }}
-                                        </span>
-
-                                        {% if item.badge %}
-                                            <span class="bg-red-600 font-semibold ml-2 px-1 relative rounded-xs text-xs text-white">
-                                                {% if item.badge_callback %}
-                                                    {{ item.badge_callback }}
-                                                {% else %}
-                                                    {{ item.badge }}
-                                                {% endif %}
+                                            <span class="text-sm">
+                                                {{ item.title|safe }}
                                             </span>
+
+                                            {% if item.badge %}
+                                                <span class="bg-red-600 font-semibold ml-2 px-1 relative rounded-xs text-xs text-white">
+                                                    {% if item.badge_callback %}
+                                                        {{ item.badge_callback }}
+                                                    {% else %}
+                                                        {{ item.badge }}
+                                                    {% endif %}
+                                                </span>
+                                            {% endif %}
+                                        </a>
+                                        
+                                        {% if item.items %}
+                                            <button type="button" class="h-[38px] w-[38px] flex items-center justify-center -mr-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500" x-on:click="subnavOpen = !subnavOpen">
+                                                <span class="material-symbols-outlined md-18 transition-transform" x-bind:class="{'rotate-180': subnavOpen}">
+                                                    expand_more
+                                                </span>
+                                            </button>
                                         {% endif %}
-                                    </a>
+                                    </div>
+                                    
                                     {% if item.items %}
-                                        <ol class="flex flex-col gap-1 px-6" {% if group.collapsible %}x-show="navigationOpen"{% endif %}>
+                                        <ol class="flex flex-col gap-1 pl-9 mt-1" x-show="subnavOpen" x-collapse>
                                             {% for subitem in item.items %}
                                                 {% if subitem.has_permission %}
                                                     <li>
-                                                        <a href="{% if subitem.link_callback %}{{ subitem.link_callback }}{% else %}{{ subitem.link }}{% endif %}" class="flex h-[38px] subitems-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if subitem.active %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500{% endif %}">
+                                                        <a href="{% if subitem.link_callback %}{{ subitem.link_callback }}{% else %}{{ subitem.link }}{% endif %}" class="flex h-[38px] items-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if subitem.active %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500{% endif %}">
                                                             {% if subitem.icon %}
                                                                 <span class="material-symbols-outlined md-18 mr-3 w-[18px]">
                                                                     {{ subitem.icon }}
@@ -127,7 +138,7 @@
     {% endif %}
 {% else %}
     <p>
-        {% trans "You don’t have permission to view or edit anything." as error_message %}
+        {% trans "You don't have permission to view or edit anything." as error_message %}
         {% include "unfold/helpers/messages/error.html" with error=error_message %}
     </p>
 {% endif %}
