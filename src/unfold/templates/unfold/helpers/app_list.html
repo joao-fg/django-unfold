@@ -26,7 +26,7 @@
                     <ol class="flex flex-col gap-1 px-6" {% if group.collapsible %}x-show="navigationOpen"{% endif %}>
                         {% for item in group.items %}
                             {% if item.has_permission %}
-                                <li {% if item.items %}{% has_active_subitem item.items as subitem_is_active %}x-data="{'subnavigationOpen': {% if subitem_is_active %}true{% else %}false{% endif %} }"{% endif %}>
+                                <li {% if item.items %}{% has_active_subitem item.items as subitem_is_active %}x-data="{'subnavigationOpen': {% if subitem_is_active or item.open %}true{% else %}false{% endif %} }"{% endif %}>
                                     <a {% if item.collapsible %}x-on:click.prevent="subnavigationOpen = !subnavigationOpen" href="#"{% else %}href="{% if item.link_callback %}{{ item.link_callback }}{% else %}{{ item.link }}{% endif %}"{% endif %} class="cursor-pointer flex h-[38px] items-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if item.active %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500{% endif %}">
                                         {% if item.icon %}
                                             <span class="material-symbols-outlined md-18 mr-3 w-[18px]">
