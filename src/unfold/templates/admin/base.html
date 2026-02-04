@@ -22,7 +22,7 @@
                 </div>
             {% endblock messages %}
 
-            <div class="@container px-4 pb-4 grow relative z-1">
+            <div class="@container px-4 pb-4 grow relative z-40">
                 <div id="content" class="{% if not cl.model_admin.list_fullwidth %}container{% endif %} mx-auto {% block coltype %}colM{% endblock %}">
                     {% if cl %}
                         {% tab_list "changelist" cl.opts %}
