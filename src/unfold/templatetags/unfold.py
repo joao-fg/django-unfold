@@ -940,5 +940,5 @@ def unicoded_slugify(value: str) -> str:
 
 
 @register.filter
-def get_class(dictionary: Mapping[Any, str], key: Any) -> str:
+def row_class(dictionary: Mapping[Any, str], key: Any) -> str:
     return dictionary.get(key, "")
