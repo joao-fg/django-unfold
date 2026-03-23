@@ -111,6 +111,16 @@ class ModelAdmin(
             list_editable.append(self.ordering_field)
             self.list_editable = list_editable
 
+        extra_context = extra_context or {}
+        row_classes_map = {}
+
+        for obj in self.get_queryset(request):
+            classes = self.get_row_classes(request, obj)
+            if classes:
+                row_classes_map[obj.pk] = classes
+
+        extra_context.update({"row_classes_map": row_classes_map})
+
         return super().changelist_view(request, extra_context)
 
     def get_list_display(self, request: HttpRequest) -> list | tuple:
@@ -249,6 +259,13 @@ class ModelAdmin(
 
     def get_changeform_datasets(self, request: HttpRequest) -> list[type[BaseDataset]]:
         return self.change_form_datasets
+
+    def get_row_classes(self, request: HttpRequest, obj: Model) -> str:
+        """
+        Override this method in ModelAdmin subclass to return extra CSS classes
+        for each row in the changelist table.
+        """
+        return ""
 
 
 class BaseInlineMixin:

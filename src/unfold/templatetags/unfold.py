@@ -937,3 +937,8 @@ def tabs_primary_active(inlines: list[InlineAdminFormSet]) -> str:
 @register.filter
 def unicoded_slugify(value: str) -> str:
     return slugify(value, allow_unicode=True)
+
+
+@register.filter
+def get_class(dictionary: Mapping[Any, str], key: Any) -> str:
+    return dictionary.get(key, "")
