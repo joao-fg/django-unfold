@@ -117,7 +117,7 @@ class ModelAdmin(
         for obj in self.get_queryset(request):
             classes = self.get_row_classes(request, obj)
             if classes:
-                row_classes_map[obj.pk] = classes
+                row_classes_map[str(obj.pk)] = classes
 
         extra_context.update({"row_classes_map": row_classes_map})
 

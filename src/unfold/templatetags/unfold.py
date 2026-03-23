@@ -941,4 +941,7 @@ def unicoded_slugify(value: str) -> str:
 
 @register.filter
 def row_class(dictionary: Mapping[Any, str], key: Any) -> str:
-    return dictionary.get(key, "") if isinstance(dictionary, Mapping) else ""
+    if not isinstance(dictionary, Mapping):
+        return ""
+        
+    return dictionary.get(str(key), "")
