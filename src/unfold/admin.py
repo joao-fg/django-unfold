@@ -105,23 +105,19 @@ class ModelAdmin(
         self, request: HttpRequest, extra_context: dict[str, str] | None = None
     ) -> TemplateResponse:
         self.request = request
+        self.row_classes_map = {}
 
         if self.ordering_field and self.ordering_field not in self.list_editable:
             list_editable = list(getattr(self, "list_editable", []))
             list_editable.append(self.ordering_field)
             self.list_editable = list_editable
 
-        extra_context = extra_context or {}
-        row_classes_map = {}
-
         for obj in self.get_queryset(request):
             classes = self.get_row_classes(request, obj)
             if classes:
-                row_classes_map[str(obj.pk)] = classes
+                self.row_classes_map[str(obj.pk)] = classes
 
-        extra_context.update({"row_classes_map": row_classes_map})
-
-        return super().changelist_view(request, extra_context)
+        return super().changelist_view(request, extra_context or {})
 
     def get_list_display(self, request: HttpRequest) -> list | tuple:
         list_display = super().get_list_display(request)

@@ -942,6 +942,6 @@ def unicoded_slugify(value: str) -> str:
 @register.filter
 def row_class(dictionary: Mapping[Any, str], key: Any) -> str:
     if not isinstance(dictionary, Mapping):
-        return ""
+        return "no-tr-class"
         
-    return dictionary.get(str(key), "")
+    return dictionary.get(str(key), "no-tr-class-2")
