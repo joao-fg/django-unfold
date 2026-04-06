@@ -1,3 +1,4 @@
+import re
 import copy
 import hashlib
 import time
@@ -362,34 +363,58 @@ class UnfoldAdminSite(AdminSite):
                 except ImportError:
                     pass
 
-            # Filter out groups where all items have no permission
-            # or where nested items are all empty after filtering
-            group["items"] = self._filter_visible_items(group["items"])
+            # NEW: filter items by permission before appending
+            group["items"] = self._filter_visible_items(request, group["items"])
 
-            # Only append group if it has visible items
+            # NEW: only append group if it still has visible items
             if group["items"]:
                 results.append(group)
 
         return results
 
-    def _filter_visible_items(self, items: list) -> list:
+    # NEW METHOD
+    def _filter_visible_items(self, request: HttpRequest, items: list) -> list:
         visible = []
 
         for item in items:
-            # If item has no permission, skip it
+            # Respect explicit permission callbacks first (has_permission set by _get_navigation_items)
             if not item.get("has_permission", True):
                 continue
 
-            # If nested group, filter its children too
             if "items" in item:
-                item["items"] = self._filter_visible_items(item["items"])
-                if item["items"]:  # Only keep group if it has visible children
+                # Nested group — recurse into children
+                item["items"] = self._filter_visible_items(request, item["items"])
+                if item["items"]:
                     visible.append(item)
             else:
-                visible.append(item)
+                # Leaf item — infer permission from the admin URL
+                link = str(item.get("link") or item.get("link_callback") or "")
+                if self._user_can_see(request, link):
+                    visible.append(item)
 
         return visible
 
+    # NEW METHOD
+    def _user_can_see(self, request: HttpRequest, link: str) -> bool:
+        """
+        Infers app_label + model_name from admin URL and checks Django's
+        built-in view permission, which respects group assignments.
+        e.g. /admin/core/agent/ -> checks core.view_agent
+        Falls back to True for non-model links (dashboard, etc).
+        Superusers always see everything.
+        """
+        if request.user.is_superuser:
+            return True
+
+        match = re.search(r"/admin/(\w+)/(\w+)/", link)
+
+        if not match:
+            return True
+
+        app_label, model_name = match.group(1), match.group(2)
+
+        return request.user.has_perm(f"{app_label}.view_{model_name}")
+    
     def _get_navigation_items(
         self, request: HttpRequest, items: list[dict], tabs: list[dict] = None
     ) -> list:
