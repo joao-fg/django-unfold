@@ -362,9 +362,33 @@ class UnfoldAdminSite(AdminSite):
                 except ImportError:
                     pass
 
-            results.append(group)
+            # Filter out groups where all items have no permission
+            # or where nested items are all empty after filtering
+            group["items"] = self._filter_visible_items(group["items"])
+
+            # Only append group if it has visible items
+            if group["items"]:
+                results.append(group)
 
         return results
+
+    def _filter_visible_items(self, items: list) -> list:
+        visible = []
+
+        for item in items:
+            # If item has no permission, skip it
+            if not item.get("has_permission", True):
+                continue
+
+            # If nested group, filter its children too
+            if "items" in item:
+                item["items"] = self._filter_visible_items(item["items"])
+                if item["items"]:  # Only keep group if it has visible children
+                    visible.append(item)
+            else:
+                visible.append(item)
+
+        return visible
 
     def _get_navigation_items(
         self, request: HttpRequest, items: list[dict], tabs: list[dict] = None
