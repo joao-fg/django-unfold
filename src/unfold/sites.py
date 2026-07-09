@@ -6,6 +6,7 @@ from typing import Any
 from urllib.parse import parse_qs, urlparse
 
 from django.contrib.admin import AdminSite
+from django.contrib.admin.options import BaseModelAdmin
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.core.validators import EMPTY_VALUES
@@ -409,7 +410,7 @@ class UnfoldAdminSite(AdminSite):
             # External or non-routable links are always visible.
             return True
 
-        model_admin = getattr(match.func, "model_admin", None)
+        model_admin = self._resolve_model_admin(match.func)
 
         # Non-model admin views (dashboard, custom pages, etc.).
         if model_admin is None:
@@ -424,6 +425,27 @@ class UnfoldAdminSite(AdminSite):
             return True
 
         return model_admin.has_view_permission(request)
+
+    @staticmethod
+    def _resolve_model_admin(view: Callable) -> BaseModelAdmin | None:
+        """
+        Django marks its built-in model admin views with a ``model_admin``
+        attribute. Custom views (ModelAdmin.get_urls, constance, etc.) are
+        usually ModelAdmin methods wrapped by AdminSite.admin_view(), so walk
+        the ``__wrapped__`` chain looking for a bound ModelAdmin as well.
+        """
+        while view is not None:
+            model_admin = getattr(view, "model_admin", None)
+
+            if model_admin is not None:
+                return model_admin
+
+            if isinstance(getattr(view, "__self__", None), BaseModelAdmin):
+                return view.__self__
+
+            view = getattr(view, "__wrapped__", None)
+
+        return None
     
     def _get_navigation_items(
         self, request: HttpRequest, items: list[dict], tabs: list[dict] | None = None
