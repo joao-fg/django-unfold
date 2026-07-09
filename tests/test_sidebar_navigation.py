@@ -380,3 +380,55 @@ def test_navigation_items_permission_check_with_custom_admin_url(django_user_mod
 
         sidebar = admin_site.get_sidebar_list(request)
         assert sidebar[0]["items"][0]["title"] == "Users"
+
+
+@pytest.mark.urls("tests.urls_secret_admin")
+@pytest.mark.django_db
+def test_navigation_items_permission_check_with_custom_admin_view(django_user_model):
+    # Regression: custom admin views (ModelAdmin.get_urls overrides, constance,
+    # etc.) lack the ``model_admin`` attribute Django sets on built-in views,
+    # so they were always shown even to users the route itself rejects with a
+    # 403. The ModelAdmin is now recovered from the admin_view wrapper chain.
+    link = reverse("tag_tool")
+    assert link == "/secret-panel/tag-tool/"
+
+    with override_settings(
+        UNFOLD={
+            **CONFIG_DEFAULTS,
+            **{
+                "SIDEBAR": {
+                    "navigation": [
+                        {
+                            "items": [
+                                {
+                                    "title": "Tag tool",
+                                    "link": link,
+                                },
+                            ]
+                        }
+                    ]
+                }
+            },
+        }
+    ):
+        admin_site = UnfoldAdminSite()
+        request = RequestFactory().get("/rand")
+
+        user = django_user_model.objects.create_user(
+            username="tooluser", password="password"
+        )
+        request.user = user
+
+        # Without the view permission the item (and its empty group) is hidden.
+        assert admin_site.get_sidebar_list(request) == []
+
+        user.user_permissions.add(
+            Permission.objects.get(
+                codename="view_tag", content_type__app_label="example"
+            )
+        )
+        # Re-fetch to drop the cached permission set.
+        request.user = django_user_model.objects.get(pk=user.pk)
+
+        sidebar = admin_site.get_sidebar_list(request)
+        assert sidebar[0]["items"][0]["title"] == "Tag tool"
