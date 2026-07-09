@@ -410,10 +410,11 @@ class UnfoldAdminSite(AdminSite):
             # External or non-routable links are always visible.
             return True
 
+        required_perms = self._resolve_required_permissions(match.func)
         model_admin = self._resolve_model_admin(match.func)
 
         # Non-model admin views (dashboard, custom pages, etc.).
-        if model_admin is None:
+        if required_perms is None and model_admin is None:
             return True
 
         user = getattr(request, "user", None)
@@ -424,24 +425,57 @@ class UnfoldAdminSite(AdminSite):
         if user.is_superuser:
             return True
 
+        # Class-based views declare their own permissions
+        # (PermissionRequiredMixin / UnfoldModelAdminViewMixin) — that is the
+        # exact check the route enforces, so it takes precedence.
+        if required_perms is not None:
+            return user.has_perms(required_perms)
+
         return model_admin.has_view_permission(request)
+
+    @staticmethod
+    def _resolve_required_permissions(view: Callable) -> tuple | list | None:
+        """
+        Returns the ``permission_required`` declared by a class-based view
+        (PermissionRequiredMixin), or None when the view does not declare one.
+        """
+        while view is not None:
+            view_class = getattr(view, "view_class", None)
+
+            if view_class is not None:
+                perms = getattr(view_class, "permission_required", None)
+
+                if isinstance(perms, str):
+                    return (perms,)
+
+                return perms
+
+            view = getattr(view, "__wrapped__", None)
+
+        return None
 
     @staticmethod
     def _resolve_model_admin(view: Callable) -> BaseModelAdmin | None:
         """
         Django marks its built-in model admin views with a ``model_admin``
         attribute. Custom views (ModelAdmin.get_urls, constance, etc.) are
-        usually ModelAdmin methods wrapped by AdminSite.admin_view(), so walk
-        the ``__wrapped__`` chain looking for a bound ModelAdmin as well.
+        usually ModelAdmin methods wrapped by AdminSite.admin_view(), or
+        class-based views instantiated with ``as_view(model_admin=self)``,
+        so walk the ``__wrapped__`` chain looking for those as well.
         """
         while view is not None:
             model_admin = getattr(view, "model_admin", None)
 
-            if model_admin is not None:
+            if isinstance(model_admin, BaseModelAdmin):
                 return model_admin
 
             if isinstance(getattr(view, "__self__", None), BaseModelAdmin):
                 return view.__self__
+
+            initkwargs = getattr(view, "view_initkwargs", None) or {}
+
+            if isinstance(initkwargs.get("model_admin"), BaseModelAdmin):
+                return initkwargs["model_admin"]
 
             view = getattr(view, "__wrapped__", None)
 
