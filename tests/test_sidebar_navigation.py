@@ -432,3 +432,56 @@ def test_navigation_items_permission_check_with_custom_admin_view(django_user_mo
 
         sidebar = admin_site.get_sidebar_list(request)
         assert sidebar[0]["items"][0]["title"] == "Tag tool"
+
+
+@pytest.mark.urls("tests.urls_secret_admin")
+@pytest.mark.django_db
+def test_navigation_items_permission_check_with_class_based_view(django_user_model):
+    # Regression: class-based views mounted with as_view(model_admin=self)
+    # (UnfoldModelAdminViewMixin pattern) are plain functions — no bound
+    # ModelAdmin, no model_admin attribute — so they were always shown even
+    # though PermissionRequiredMixin rejects the user with a 403. The
+    # view_class's permission_required is now checked instead.
+    link = reverse("tag_fixer_tool")
+    assert link == "/secret-panel/tag-fixer/"
+
+    with override_settings(
+        UNFOLD={
+            **CONFIG_DEFAULTS,
+            **{
+                "SIDEBAR": {
+                    "navigation": [
+                        {
+                            "items": [
+                                {
+                                    "title": "Tag fixer",
+                                    "link": link,
+                                },
+                            ]
+                        }
+                    ]
+                }
+            },
+        }
+    ):
+        admin_site = UnfoldAdminSite()
+        request = RequestFactory().get("/rand")
+
+        user = django_user_model.objects.create_user(
+            username="fixeruser", password="password"
+        )
+        request.user = user
+
+        # Without the declared permission the item (and its group) is hidden.
+        assert admin_site.get_sidebar_list(request) == []
+
+        user.user_permissions.add(
+            Permission.objects.get(
+                codename="change_tag", content_type__app_label="example"
+            )
+        )
+        # Re-fetch to drop the cached permission set.
+        request.user = django_user_model.objects.get(pk=user.pk)
+
+        sidebar = admin_site.get_sidebar_list(request)
+        assert sidebar[0]["items"][0]["title"] == "Tag fixer"
